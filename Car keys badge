@@ -1,0 +1,698 @@
+-- 基本服務與玩家
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local GuiService = game:GetService("GuiService")
+
+-- GUI 主體
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+ScreenGui.Name = "MaolingHub"
+
+-- 修正：主框架樣式
+local Frame = Instance.new("Frame", ScreenGui)
+Frame.Size = UDim2.new(0, 450, 0, 350)
+Frame.Position = UDim2.new(0.5, -225, 0.5, -175)
+Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+Frame.BorderSizePixel = 0
+Frame.Active = true
+Frame.Draggable = true
+
+-- 添加漸層效果
+local gradient = Instance.new("UIGradient", Frame)
+gradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(25, 25, 35)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(35, 35, 50))
+}
+gradient.Rotation = 45
+
+-- 添加外發光效果
+local stroke = Instance.new("UIStroke", Frame)
+stroke.Color = Color3.fromRGB(100, 150, 255)
+stroke.Thickness = 2
+stroke.Transparency = 0.5
+
+Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 15)
+
+-- 修正：標題樣式
+local Title = Instance.new("TextLabel", Frame)
+Title.Size = UDim2.new(1, -80, 0, 50)
+Title.Position = UDim2.new(0, 15, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "✨ 貓玲的腳本區 ✨"
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 22
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+-- 添加標題發光效果
+local titleStroke = Instance.new("UIStroke", Title)
+titleStroke.Color = Color3.fromRGB(100, 150, 255)
+titleStroke.Thickness = 1
+titleStroke.Transparency = 0.3
+
+-- 修正：關閉按鈕樣式和功能
+local Close = Instance.new("TextButton", Frame)
+Close.Size = UDim2.new(0, 35, 0, 35)
+Close.Position = UDim2.new(1, -40, 0, 8)
+Close.Text = "x"
+Close.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+Close.TextColor3 = Color3.fromRGB(255, 255, 255)
+Close.Font = Enum.Font.GothamBold
+Close.TextSize = 18
+Close.BorderSizePixel = 0
+
+-- 添加關閉按鈕效果
+local closeGradient = Instance.new("UIGradient", Close)
+closeGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 60, 60)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 40, 40))
+}
+
+Instance.new("UICorner", Close).CornerRadius = UDim.new(0, 8)
+
+-- 修正：關閉按鈕功能
+Close.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+    _G.maolingHubLoaded = false -- 重置載入狀態
+end)
+
+-- 修正：最小化按鈕樣式
+local Minimize = Instance.new("TextButton", Frame)
+Minimize.Size = UDim2.new(0, 35, 0, 35)
+Minimize.Position = UDim2.new(1, -80, 0, 8)
+Minimize.Text = "─"
+Minimize.BackgroundColor3 = Color3.fromRGB(100, 100, 120)
+Minimize.TextColor3 = Color3.fromRGB(255, 255, 255)
+Minimize.Font = Enum.Font.GothamBold
+Minimize.TextSize = 16
+Minimize.BorderSizePixel = 0
+
+local minimizeGradient = Instance.new("UIGradient", Minimize)
+minimizeGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 100, 120)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 80, 100))
+}
+
+Instance.new("UICorner", Minimize).CornerRadius = UDim.new(0, 8)
+
+-- 修正：側邊欄為可滾動
+local SideBar = Instance.new("ScrollingFrame", Frame)
+SideBar.Size = UDim2.new(0, 130, 1, -55)
+SideBar.Position = UDim2.new(0, 5, 0, 50)
+SideBar.BackgroundColor3 = Color3.fromRGB(35, 35, 50)
+SideBar.BorderSizePixel = 0
+SideBar.ScrollBarThickness = 6
+SideBar.CanvasSize = UDim2.new(0, 0, 0, 200)
+SideBar.AutomaticCanvasSize = Enum.AutomaticSize.Y
+SideBar.ScrollingDirection = Enum.ScrollingDirection.Y
+
+-- 添加側邊欄樣式
+local sidebarGradient = Instance.new("UIGradient", SideBar)
+sidebarGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(35, 35, 50)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(45, 45, 65))
+}
+
+Instance.new("UICorner", SideBar).CornerRadius = UDim.new(0, 10)
+
+-- 添加UIListLayout到側邊欄
+local sidebarLayout = Instance.new("UIListLayout", SideBar)
+sidebarLayout.Padding = UDim.new(0, 8)
+sidebarLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+-- 修正：內容區域
+local Content = Instance.new("Frame", Frame)
+Content.Size = UDim2.new(1, -145, 1, -55)
+Content.Position = UDim2.new(0, 140, 0, 50)
+Content.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+Content.BorderSizePixel = 0
+
+local contentGradient = Instance.new("UIGradient", Content)
+contentGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 60)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 50, 75))
+}
+
+Instance.new("UICorner", Content).CornerRadius = UDim.new(0, 10)
+
+-- 修正：縮小功能的尺寸
+local isMinimized = false
+local fullSize = UDim2.new(0, 450, 0, 350)
+local miniSize = UDim2.new(0, 450, 0, 50)
+
+Minimize.MouseButton1Click:Connect(function()
+    isMinimized = not isMinimized
+    SideBar.Visible = not isMinimized
+    Content.Visible = not isMinimized
+    Frame.Size = isMinimized and miniSize or fullSize
+end)
+
+-- 修正：簡單高亮文字的分區按鈕樣式
+local function createSectionButton(text, order, parent)
+    local btn = Instance.new("TextButton", parent)
+    btn.Size = UDim2.new(0, 120, 0, 45)
+    btn.Text = text
+    btn.BackgroundColor3 = Color3.fromRGB(85, 85, 105)
+    
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.TextTransparency = 0
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 16
+    btn.BorderSizePixel = 0
+    
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
+    
+    local btnStroke = Instance.new("UIStroke", btn)
+    btnStroke.Color = Color3.fromRGB(150, 180, 255)
+    btnStroke.Thickness = 1
+    btnStroke.Transparency = 0.6
+    
+    btn.MouseEnter:Connect(function()
+        btn.BackgroundColor3 = Color3.fromRGB(105, 105, 125)
+        btnStroke.Transparency = 0.3
+    end)
+    
+    btn.MouseLeave:Connect(function()
+        btn.BackgroundColor3 = Color3.fromRGB(85, 85, 105)
+        btnStroke.Transparency = 0.6
+    end)
+    
+    return btn
+end
+
+-- 修正：簡單高亮文字的一般按鈕樣式
+local function createButton(text, order, parent, spacing)
+    local btn = Instance.new("TextButton", parent)
+    btn.Size = UDim2.new(0, 180, 0, 35)
+    btn.Position = UDim2.new(0.5, -90, 0, 10 + (order - 1) * spacing)
+    btn.Text = text
+    btn.BackgroundColor3 = Color3.fromRGB(80, 140, 220)
+    
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.TextSize = 16
+    btn.Font = Enum.Font.GothamBold
+    btn.BorderSizePixel = 0
+    
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    
+    local btnStroke = Instance.new("UIStroke", btn)
+    btnStroke.Color = Color3.fromRGB(120, 170, 255)
+    btnStroke.Thickness = 1
+    btnStroke.Transparency = 0.6
+    
+    btn.MouseEnter:Connect(function()
+        btn.BackgroundColor3 = Color3.fromRGB(100, 160, 240)
+        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        btnStroke.Transparency = 0.3
+    end)
+    
+    btn.MouseLeave:Connect(function()
+        btn.BackgroundColor3 = Color3.fromRGB(80, 140, 220)
+        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        btnStroke.Transparency = 0.6
+    end)
+    
+    return btn
+end
+
+-- 飛行和朝向功能變數
+local flying = false
+local bodyVelocity = nil
+local lookAtConnection = nil
+local flyConnection = nil
+local inputConnection = nil
+
+-- 按鍵狀態
+local keys = {
+    W = false,
+    A = false,
+    S = false,
+    D = false,
+    Space = false,
+    LeftShift = false
+}
+
+-- 手機控制變數
+local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+local mobileControls = nil
+local joystickCenter = Vector2.new(0, 0)
+local joystickInput = Vector2.new(0, 0)
+local isDragging = false
+
+-- 創建手機控制界面
+local function createMobileControls()
+    if mobileControls then
+        mobileControls:Destroy()
+    end
+    
+    -- 手機控制GUI
+    mobileControls = Instance.new("ScreenGui", LocalPlayer.PlayerGui)
+    mobileControls.Name = "MobileFlightControls"
+    mobileControls.ResetOnSpawn = false
+    
+    -- 操控桿背景
+    local joystickBase = Instance.new("Frame", mobileControls)
+    joystickBase.Size = UDim2.new(0, 120, 0, 120)
+    joystickBase.Position = UDim2.new(0, 30, 1, -150)
+    joystickBase.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    joystickBase.BackgroundTransparency = 0.3
+    joystickBase.BorderSizePixel = 0
+    
+    local joystickBaseCorner = Instance.new("UICorner", joystickBase)
+    joystickBaseCorner.CornerRadius = UDim.new(0.5, 0)
+    
+    local joystickBaseStroke = Instance.new("UIStroke", joystickBase)
+    joystickBaseStroke.Color = Color3.fromRGB(100, 150, 255)
+    joystickBaseStroke.Thickness = 2
+    joystickBaseStroke.Transparency = 0.5
+    
+    -- 操控桿
+    local joystick = Instance.new("Frame", joystickBase)
+    joystick.Size = UDim2.new(0, 50, 0, 50)
+    joystick.Position = UDim2.new(0.5, -25, 0.5, -25)
+    joystick.BackgroundColor3 = Color3.fromRGB(100, 150, 255)
+    joystick.BorderSizePixel = 0
+    
+    local joystickCorner = Instance.new("UICorner", joystick)
+    joystickCorner.CornerRadius = UDim.new(0.5, 0)
+    
+    -- 上升按鈕
+    local upButton = Instance.new("TextButton", mobileControls)
+    upButton.Size = UDim2.new(0, 60, 0, 60)
+    upButton.Position = UDim2.new(1, -90, 1, -180)
+    upButton.Text = "↑"
+    upButton.BackgroundColor3 = Color3.fromRGB(80, 140, 220)
+    upButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    upButton.Font = Enum.Font.GothamBold
+    upButton.TextSize = 24
+    upButton.BorderSizePixel = 0
+    
+    local upCorner = Instance.new("UICorner", upButton)
+    upCorner.CornerRadius = UDim.new(0.5, 0)
+    
+    -- 下降按鈕
+    local downButton = Instance.new("TextButton", mobileControls)
+    downButton.Size = UDim2.new(0, 60, 0, 60)
+    downButton.Position = UDim2.new(1, -90, 1, -110)
+    downButton.Text = "↓"
+    downButton.BackgroundColor3 = Color3.fromRGB(80, 140, 220)
+    downButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    downButton.Font = Enum.Font.GothamBold
+    downButton.TextSize = 24
+    downButton.BorderSizePixel = 0
+    
+    local downCorner = Instance.new("UICorner", downButton)
+    downCorner.CornerRadius = UDim.new(0.5, 0)
+    
+    -- 操控桿邏輯
+    local function updateJoystick(input)
+        local centerPosition = joystickBase.AbsolutePosition + joystickBase.AbsoluteSize / 2
+        local inputPosition = Vector2.new(input.Position.X, input.Position.Y)
+        local delta = inputPosition - centerPosition
+        
+        -- 限制操控桿範圍
+        local maxDistance = (joystickBase.AbsoluteSize.X - joystick.AbsoluteSize.X) / 2
+        local distance = math.min(delta.Magnitude, maxDistance)
+        local direction = delta.Unit
+        
+        if delta.Magnitude > 0 then
+            joystick.Position = UDim2.new(0.5, direction.X * distance - joystick.AbsoluteSize.X/2, 
+                                         0.5, direction.Y * distance - joystick.AbsoluteSize.Y/2)
+            
+            -- 更新輸入值 (-1 到 1)
+            joystickInput = Vector2.new(direction.X * (distance / maxDistance), 
+                                       direction.Y * (distance / maxDistance))
+        else
+            joystick.Position = UDim2.new(0.5, -25, 0.5, -25)
+            joystickInput = Vector2.new(0, 0)
+        end
+    end
+    
+    -- 觸控事件
+    joystickBase.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            isDragging = true
+            updateJoystick(input)
+        end
+    end)
+    
+    joystickBase.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch and isDragging then
+            updateJoystick(input)
+        end
+    end)
+    
+    joystickBase.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            isDragging = false
+            joystick.Position = UDim2.new(0.5, -25, 0.5, -25)
+            joystickInput = Vector2.new(0, 0)
+        end
+    end)
+    
+    -- 上升按鈕事件
+    upButton.TouchTap:Connect(function()
+        keys.Space = true
+        wait(0.1)
+        keys.Space = false
+    end)
+    
+    upButton.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            keys.Space = true
+        end
+    end)
+    
+    upButton.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            keys.Space = false
+        end
+    end)
+    
+    -- 下降按鈕事件
+    downButton.TouchTap:Connect(function()
+        keys.LeftShift = true
+        wait(0.1)
+        keys.LeftShift = false
+    end)
+    
+    downButton.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            keys.LeftShift = true
+        end
+    end)
+    
+    downButton.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            keys.LeftShift = false
+        end
+    end)
+end
+local function enableFlying()
+    local character = LocalPlayer.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then
+        return
+    end
+    
+    local humanoidRootPart = character.HumanoidRootPart
+    local humanoid = character:FindFirstChild("Humanoid")
+    
+    -- 只使用 BodyVelocity 來控制飛行
+    if bodyVelocity then
+        bodyVelocity:Destroy()
+    end
+    bodyVelocity = Instance.new("BodyVelocity")
+    bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+    bodyVelocity.Parent = humanoidRootPart
+    
+    flying = true
+    
+    -- 監聽按鍵輸入
+    if inputConnection then
+        inputConnection:Disconnect()
+    end
+    
+    inputConnection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed then return end
+        
+        if input.KeyCode == Enum.KeyCode.W then
+            keys.W = true
+        elseif input.KeyCode == Enum.KeyCode.A then
+            keys.A = true
+        elseif input.KeyCode == Enum.KeyCode.S then
+            keys.S = true
+        elseif input.KeyCode == Enum.KeyCode.D then
+            keys.D = true
+        elseif input.KeyCode == Enum.KeyCode.Space then
+            keys.Space = true
+        elseif input.KeyCode == Enum.KeyCode.LeftShift then
+            keys.LeftShift = true
+        end
+    end)
+    
+    UserInputService.InputEnded:Connect(function(input, gameProcessed)
+        if gameProcessed then return end
+        
+        if input.KeyCode == Enum.KeyCode.W then
+            keys.W = false
+        elseif input.KeyCode == Enum.KeyCode.A then
+            keys.A = false
+        elseif input.KeyCode == Enum.KeyCode.S then
+            keys.S = false
+        elseif input.KeyCode == Enum.KeyCode.D then
+            keys.D = false
+        elseif input.KeyCode == Enum.KeyCode.Space then
+            keys.Space = false
+        elseif input.KeyCode == Enum.KeyCode.LeftShift then
+            keys.LeftShift = false
+        end
+    end)
+    
+    -- 飛行控制循環
+    if flyConnection then
+        flyConnection:Disconnect()
+    end
+    
+    flyConnection = RunService.Heartbeat:Connect(function()
+        if not flying or not character or not character:FindFirstChild("HumanoidRootPart") or not bodyVelocity then
+            return
+        end
+        
+        local camera = Workspace.CurrentCamera
+        if not camera then return end
+        
+        -- 計算移動方向
+        local moveVector = Vector3.new(0, 0, 0)
+        local flySpeed = 50
+        
+        -- 基於相機方向計算移動
+        local cameraCFrame = camera.CFrame
+        local forwardVector = cameraCFrame.LookVector
+        local rightVector = cameraCFrame.RightVector
+        local upVector = Vector3.new(0, 1, 0)
+        
+        -- 前後移動
+        if keys.W then
+            moveVector = moveVector + forwardVector
+        end
+        if keys.S then
+            moveVector = moveVector - forwardVector
+        end
+        
+        -- 左右移動
+        if keys.A then
+            moveVector = moveVector - rightVector
+        end
+        if keys.D then
+            moveVector = moveVector + rightVector
+        end
+        
+        -- 上下移動
+        if keys.Space then
+            moveVector = moveVector + upVector
+        end
+        if keys.LeftShift then
+            moveVector = moveVector - upVector
+        end
+        
+        -- 標準化移動向量並應用速度
+        if moveVector.Magnitude > 0 then
+            moveVector = moveVector.Unit * flySpeed
+        end
+        
+        -- 設置速度
+        bodyVelocity.Velocity = moveVector
+    end)
+    
+    -- 朝向FinishLine的功能
+    if lookAtConnection then
+        lookAtConnection:Disconnect()
+    end
+    
+    lookAtConnection = RunService.Heartbeat:Connect(function()
+        if not flying or not character or not character:FindFirstChild("HumanoidRootPart") then
+            return
+        end
+        
+        local finishLine = Workspace:FindFirstChild("Map")
+        if finishLine then
+            finishLine = finishLine:FindFirstChild("FinishLine")
+        end
+        
+        if finishLine then
+            local targetPosition = finishLine.Position
+            local currentPosition = humanoidRootPart.Position
+            local lookDirection = (targetPosition - currentPosition)
+            lookDirection = Vector3.new(lookDirection.X, 0, lookDirection.Z).Unit
+            
+            if lookDirection.Magnitude > 0 then
+                local newCFrame = CFrame.lookAt(currentPosition, currentPosition + lookDirection)
+                humanoidRootPart.CFrame = newCFrame
+            end
+        end
+    end)
+end
+
+-- 停用飛行功能
+local function disableFlying()
+    flying = false
+    
+    if bodyVelocity then
+        bodyVelocity:Destroy()
+        bodyVelocity = nil
+    end
+    
+    if lookAtConnection then
+        lookAtConnection:Disconnect()
+        lookAtConnection = nil
+    end
+    
+    if flyConnection then
+        flyConnection:Disconnect()
+        flyConnection = nil
+    end
+    
+    if inputConnection then
+        inputConnection:Disconnect()
+        inputConnection = nil
+    end
+    
+    -- 移除手機控制界面
+    if mobileControls then
+        mobileControls:Destroy()
+        mobileControls = nil
+    end
+    
+    -- 重置按鍵狀態
+    for key, _ in pairs(keys) do
+        keys[key] = false
+    end
+    
+    -- 重置操控桿狀態
+    joystickInput = Vector2.new(0, 0)
+    isDragging = false
+end
+
+-- 創建賽車場分區內容
+local function createRacingContent()
+    -- 清空內容區域
+    for _, child in pairs(Content:GetChildren()) do
+        if child:IsA("GuiObject") then
+            child:Destroy()
+        end
+    end
+    
+    -- 創建標題
+    local sectionTitle = Instance.new("TextLabel", Content)
+    sectionTitle.Size = UDim2.new(1, -20, 0, 40)
+    sectionTitle.Position = UDim2.new(0, 10, 0, 10)
+    sectionTitle.BackgroundTransparency = 1
+    sectionTitle.Text = "🏁 賽車場功能"
+    sectionTitle.Font = Enum.Font.GothamBold
+    sectionTitle.TextSize = 20
+    sectionTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    sectionTitle.TextXAlignment = Enum.TextXAlignment.Left
+    
+    -- 創建面向按鈕
+    local lookAtBtn = createButton("面向終點", 1, Content, 50)
+    lookAtBtn.Position = UDim2.new(0.5, -90, 0, 60)
+    
+    -- 創建狀態顯示
+    local statusLabel = Instance.new("TextLabel", Content)
+    statusLabel.Size = UDim2.new(1, -20, 0, 30)
+    statusLabel.Position = UDim2.new(0, 10, 0, 110)
+    statusLabel.BackgroundTransparency = 1
+    statusLabel.Text = "狀態: 未啟動"
+    statusLabel.Font = Enum.Font.Gotham
+    statusLabel.TextSize = 14
+    statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+    
+    -- 創建控制提示
+    local controlHint = Instance.new("TextLabel", Content)
+    controlHint.Size = UDim2.new(1, -20, 0, 80)
+    controlHint.Position = UDim2.new(0, 10, 0, 140)
+    controlHint.BackgroundTransparency = 1
+    controlHint.Font = Enum.Font.Gotham
+    controlHint.TextSize = 12
+    controlHint.TextColor3 = Color3.fromRGB(150, 150, 150)
+    controlHint.TextXAlignment = Enum.TextXAlignment.Left
+    controlHint.TextYAlignment = Enum.TextYAlignment.Top
+    
+    -- 根據平台顯示不同的控制提示
+    if isMobile then
+        controlHint.Text = "手機控制:\n• 用infinite yield開飛行\n• 只會自動朝向終點"
+    else
+        controlHint.Text = "電腦控制:\n• WASD移動\n• 空格鍵上升\n• Shift下降\n• 會自動朝向終點\n• (不確定電腦能不能用 我這只能用平板或手機)"
+    end
+    
+    -- 創建停止按鈕
+    local stopBtn = createButton("⛔ 停止", 2, Content, 50)
+    stopBtn.Position = UDim2.new(0.5, -90, 0, 240)
+    stopBtn.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+    
+    -- 停止按鈕hover效果
+    stopBtn.MouseEnter:Connect(function()
+        stopBtn.BackgroundColor3 = Color3.fromRGB(240, 80, 80)
+    end)
+    
+    stopBtn.MouseLeave:Connect(function()
+        stopBtn.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+    end)
+    
+    -- 面向按鈕功能
+    lookAtBtn.MouseButton1Click:Connect(function()
+        local finishLine = Workspace:FindFirstChild("Map")
+        if finishLine then
+            finishLine = finishLine:FindFirstChild("FinishLine")
+        end
+        
+        if not finishLine then
+            statusLabel.Text = "狀態: 找不到 FinishLine"
+            statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+            return
+        end
+        
+        local character = LocalPlayer.Character
+        if not character or not character:FindFirstChild("HumanoidRootPart") then
+            statusLabel.Text = "狀態: 角色不存在"
+            statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+            return
+        end
+        
+        -- 啟動飛行和朝向功能
+        enableFlying()
+        
+        statusLabel.Text = "狀態: 飛行中，永遠朝向終點線"
+        statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+    end)
+    
+    -- 停止按鈕功能
+    stopBtn.MouseButton1Click:Connect(function()
+        disableFlying()
+        statusLabel.Text = "狀態: 已停止"
+        statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    end)
+end
+
+-- 創建賽車場分區按鈕
+local racingBtn = createSectionButton("🏁 賽車場", 1, SideBar)
+
+-- 賽車場按鈕點擊事件
+racingBtn.MouseButton1Click:Connect(function()
+    createRacingContent()
+end)
+
+-- 默認顯示賽車場內容
+createRacingContent()
+
+-- 當角色重生時重新設置
+LocalPlayer.CharacterAdded:Connect(function()
+    if flying then
+        wait(1) -- 等待角色完全載入
+        enableFlying()
+    end
+end)
