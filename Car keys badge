@@ -600,6 +600,21 @@ local function createRacingContent()
     local lookAtBtn = createButton("面向終點", 1, Content, 50)
     lookAtBtn.Position = UDim2.new(0.5, -90, 0, 60)
     
+    -- 創建 Infinite Yield 按鈕（放在面向按鈕旁邊）
+    local iyBtn = createButton("IY", 1, Content, 50)
+    iyBtn.Position = UDim2.new(0.5, 20, 0, 60)  -- 放在右邊
+    iyBtn.Size = UDim2.new(0, 80, 0, 35)  -- 稍微小一點
+    iyBtn.BackgroundColor3 = Color3.fromRGB(120, 80, 220)  -- 紫色區分
+    
+    -- IY按鈕hover效果
+    iyBtn.MouseEnter:Connect(function()
+        iyBtn.BackgroundColor3 = Color3.fromRGB(140, 100, 240)
+    end)
+    
+    iyBtn.MouseLeave:Connect(function()
+        iyBtn.BackgroundColor3 = Color3.fromRGB(120, 80, 220)
+    end)
+    
     -- 創建狀態顯示
     local statusLabel = Instance.new("TextLabel", Content)
     statusLabel.Size = UDim2.new(1, -20, 0, 30)
@@ -642,7 +657,7 @@ local function createRacingContent()
     stopBtn.MouseLeave:Connect(function()
         stopBtn.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
     end)
-
+    
     -- 面向按鈕功能
     lookAtBtn.MouseButton1Click:Connect(function()
         local finishLine = Workspace:FindFirstChild("Map")
@@ -668,6 +683,16 @@ local function createRacingContent()
         
         statusLabel.Text = "狀態: 飛行中，永遠朝向終點線"
         statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+    end)
+    
+    -- IY按鈕功能
+    iyBtn.MouseButton1Click:Connect(function()
+        -- 執行 Infinite Yield
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/edgeiy/infiniteyield/master/source'))()
+        
+        -- 更新狀態顯示
+        statusLabel.Text = "狀態: Infinite Yield 已載入"
+        statusLabel.TextColor3 = Color3.fromRGB(200, 120, 255)
     end)
     
     -- 停止按鈕功能
@@ -697,32 +722,3 @@ LocalPlayer.CharacterAdded:Connect(function()
     end
 end)
 
-
--- 創建 Infinite Yield 按鈕
-local infiniteYieldBtn = createButton("🚀 Infinite Yield", 3, Content, 50)
-infiniteYieldBtn.Position = UDim2.new(0.5, -90, 0, 290)
-infiniteYieldBtn.BackgroundColor3 = Color3.fromRGB(100, 180, 100)
-
--- Infinite Yield 按鈕 hover 效果
-infiniteYieldBtn.MouseEnter:Connect(function()
-    infiniteYieldBtn.BackgroundColor3 = Color3.fromRGB(120, 200, 120)
-end)
-
-infiniteYieldBtn.MouseLeave:Connect(function()
-    infiniteYieldBtn.BackgroundColor3 = Color3.fromRGB(100, 180, 100)
-end)
-
--- 然後在停止按鈕功能的後面添加：
-
--- Infinite Yield 按鈕功能
-infiniteYieldBtn.MouseButton1Click:Connect(function()
-    statusLabel.Text = "狀態: 正在加載 Infinite Yield..."
-    statusLabel.TextColor3 = Color3.fromRGB(255, 255, 100)
-    
-    -- 執行 Infinite Yield
-    pcall(function()
-        loadstring(game:HttpGet('https://raw.githubusercontent.com/edgeiy/infiniteyield/master/source'))()
-        statusLabel.Text = "狀態: Infinite Yield 已加載"
-        statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
-    end)
-end)
