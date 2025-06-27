@@ -598,7 +598,8 @@ local function createRacingContent()
     
     -- 創建面向按鈕
     local lookAtBtn = createButton("面向終點", 1, Content, 50)
-    lookAtBtn.Position = UDim2.new(0.5, -90, 0, 60)
+    lookAtBtn.Position = UDim2.new(0.5, -140, 0, 60)
+    lookAtBtn.Size = UDim2.new(0, 120, 0, 35)  -- 調整寬度
     
     -- 創建 Infinite Yield 按鈕（放在面向按鈕旁邊）
     local iyBtn = createButton("IY", 1, Content, 50)
